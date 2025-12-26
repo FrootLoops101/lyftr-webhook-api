@@ -1,0 +1,29 @@
+version: '3.8'
+
+services:
+  webhook-api:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: lyftr-webhook-api
+    ports:
+      - "8000:8000"
+    environment:
+      - WEBHOOK_SECRET=${WEBHOOK_SECRET:?WEBHOOK_SECRET not set}
+      - DATABASE_URL=sqlite:////data/app.db
+      - LOG_LEVEL=INFO
+      - HOST=0.0.0.0
+      - PORT=8000
+    volumes:
+      - webhook-data:/data
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/health/live"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 5s
+    restart: unless-stopped
+
+volumes:
+  webhook-data:
+    driver: local
